@@ -233,34 +233,55 @@ else:
     st.header("Bem-vindo ao Insight Navigator! 🚀")
 
     st.markdown("""
-        Esta é a sua central de controle para projetos de Ciência de Dados. A ferramenta foi projetada para guiá-lo através do ciclo completo: da exploração inicial de um dataset até a avaliação detalhada de modelos preditivos.
-        """)
+            Esta é a sua central de controle para projetos de Ciência de Dados. A ferramenta foi projetada para guiá-lo através do ciclo completo: da exploração inicial de um dataset até a avaliação detalhada de modelos preditivos.
+            """)
 
     st.info("👈 **Para começar, carregue um arquivo CSV usando o menu na barra lateral esquerda.**")
 
     st.subheader("Como Utilizar a Ferramenta:")
     st.markdown("""
-        1.  **Carregue seus Dados:** No menu lateral, clique em 'Browse files' e selecione um arquivo CSV do seu computador.
-        2.  **Explore (Aba EDA):** Após o upload, a primeira aba lhe dará uma análise completa do seu dataset. Navegue pelas estatísticas, distribuições e correlações para entender seus dados a fundo.
-        3.  **Modele (Aba Simulador):**
-            * Na segunda aba, selecione sua **variável-alvo** e as **features**.
-            * Na barra lateral, escolha um modelo de Machine Learning e ajuste seus **hiperparâmetros**.
-            * Clique em **'Treinar Modelo'** e explore os resultados nas diversas abas de avaliação.
-        """)
+            1.  **Carregue seus Dados:** No menu lateral, clique em 'Browse files' e selecione um arquivo CSV do seu computador.
+            2.  **Explore (Aba EDA):** Após o upload, a primeira aba lhe dará uma análise completa do seu dataset. Navegue pelas estatísticas, distribuições e correlações para entender seus dados a fundo.
+            3.  **Modele (Aba Simulador):**
+                * Na segunda aba, selecione sua **variável-alvo** e as **features**.
+                * Na barra lateral, escolha um modelo de Machine Learning e ajuste seus **hiperparâmetros**.
+                * Clique em **'Treinar Modelo'** e explore os resultados nas diversas abas de avaliação.
+            """)
 
     st.subheader("Não tem um dataset? Sem problemas!")
-    st.markdown("Você pode baixar um dataset clássico de exemplo sobre diagnóstico de câncer de mama para testar todas as funcionalidades da ferramenta.")
+    st.markdown("Você pode baixar um dataset clássico de exemplo para testar todas as funcionalidades da ferramenta.")
 
-    with open("data/Breast Cancer Wisconsin.csv", "r") as file:
-        csv_data = file.read()
+    try:
+        with open("data/Breast Cancer Wisconsin.csv", "r") as file:
+            csv_data = file.read()
 
-    #  botão de download
-    st.download_button(
-        label="Clique aqui para baixar o dataset de exemplo",
-        data=csv_data,
-        file_name='Breast Cancer Wisconsin.csv',  # Nome do arquivo para o usuário
-        mime='text/csv',
-    )
+        # Botão de download
+        st.download_button(
+            label="Clique aqui para baixar o dataset de exemplo",
+            data=csv_data,
+            file_name='Breast_Cancer_Wisconsin.csv',  # Nome do arquivo para o usuário
+            mime='text/csv',
+        )
+    except FileNotFoundError:
+        st.error(
+            "Arquivo de exemplo 'data/Breast Cancer Wisconsin.csv' não encontrado. Certifique-se de que ele está na pasta correta.")
+
+    st.markdown("---")
+
+    st.subheader("💡 Dicas para o seu Dataset")
+    st.markdown("""
+        Para obter os melhores resultados, utilize um arquivo **CSV** focado em um problema de **classificação binária** (onde a coluna-alvo tem apenas duas categorias, como 'Sim/Não' ou 0/1). O ideal é que o dataset esteja relativamente limpo, com poucos dados faltantes.
+        """)
+
+    # orientações em markdown
+    st.markdown("""
+        | ✅ Bom para o App                                        | ❌ Evitar                                             |
+        | -------------------------------------------------------- | ---------------------------------------------------- |
+        | Problemas de **Classificação Binária** | Problemas de **Regressão** (prever um número)        |
+        | Alvo com 2 classes (Sim/Não, 1/0)                        | Alvo com 3 ou mais classes (Multiclasse)             |
+        | Poucos dados faltantes                                   | Muitas células vazias (NaN)                          |
+        | Mistura de features numéricas/categóricas                | Apenas features de texto não-categóricas             |
+        """)
 
     st.markdown("---")
     st.markdown(
