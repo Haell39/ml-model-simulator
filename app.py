@@ -61,7 +61,7 @@ if uploaded_file is not None:
         st.subheader("4. Matriz de Correlação")
         if numeric_columns:
             corr_matrix = df[numeric_columns].corr()
-            fig, ax = plt.subplots(figsize=(12, 5))
+            fig, ax = plt.subplots(figsize=(10, 6))
             sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", ax=ax, annot_kws={"size": 6})
             ax.set_title("Mapa de Calor da Correlação")
             st.pyplot(fig)
@@ -249,11 +249,19 @@ else:
         """)
 
     st.subheader("Não tem um dataset? Sem problemas!")
-    st.markdown("""
-        Você pode baixar um dataset clássico de exemplo sobre diagnóstico de câncer de mama para testar todas as funcionalidades da ferramenta.
+    st.markdown("Você pode baixar um dataset clássico de exemplo sobre diagnóstico de câncer de mama para testar todas as funcionalidades da ferramenta.")
 
-        [**Clique aqui para baixar o dataset de exemplo (Breast Cancer).**](https://raw.githubusercontent.com/dataprofessor/data/master/breast-cancer-wisconsin-data.csv)
-        """)
+    with open("data/Breast Cancer Wisconsin.csv", "r") as file:
+        csv_data = file.read()
+
+    #  botão de download
+    st.download_button(
+        label="Clique aqui para baixar o dataset de exemplo",
+        data=csv_data,
+        file_name='Breast Cancer Wisconsin.csv',  # Nome do arquivo para o usuário
+        mime='text/csv',
+    )
+
     st.markdown("---")
-    st.write("Desenvolvido com Streamlit, Pandas, Scikit-learn e ❤️.")
-
+    st.markdown(
+        "⚙️ Desenvolvido por **[Rafael Andrade](https://www.linkedin.com/in/rafaelsantoshome/)** com Streamlit, Pandas, Scikit-learn, Matplotlib e Seaborn.")
