@@ -1,5 +1,4 @@
 import io
-
 import streamlit as st
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -11,28 +10,16 @@ from sklearn.preprocessing import StandardScaler
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-# --- Configuração da Página ---
-st.set_page_config(
-    page_title="Análise de Dados e Modelagem",
-    page_icon="📊",
-    layout="wide"
-)
+st.set_page_config(page_title="Análise de Dados e Modelagem", page_icon="📊", layout="wide")
 
-# --- Título e Descrição ---
-st.title("📊 Ferramenta Completa de Análise e Modelagem de Machine Learning")
-st.write(
-    "Esta ferramenta interativa combina uma Análise Exploratória de Dados (EDA) detalhada "
-    "com um poderoso Simulador de Modelos de Machine Learning."
-)
-st.write("---")
+st.title("📊 Ferramenta de Análise de Dados e Machine Learning")
+st.write("Uma solução para análise de dados e modelagem preditiva. Esta aplicação integra um módulo de Análise Exploratória (EDA) com histogramas, mapas de calor e gráficos de dispersão, a um poderoso simulador que permite treinar, ajustar e avaliar múltiplos algoritmos de Machine Learning, incluindo a visualização de Curvas ROC e métricas completas.")
 
-# --- Barra Lateral ---
 with st.sidebar:
     st.header("1. Carregue seus Dados")
     uploaded_file = st.file_uploader("Escolha um arquivo CSV", type="csv")
     params = {}
 
-# --- Lógica Principal ---
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     df.dropna(axis=1, how='all', inplace=True)
@@ -44,78 +31,105 @@ if uploaded_file is not None:
         st.stop()
 
     st.success("Arquivo carregado e dados limpos com sucesso!")
-
-    # --- Divisão em Abas Principais ---
     eda_tab, model_tab = st.tabs(["Análise Exploratória (EDA)", "Simulador de Modelos"])
 
-    # =====================================================================================
-    # --- ABA 1: ANÁLISE EXPLORATÓRIA DE DADOS (EDA) ---
-    # =====================================================================================
     with eda_tab:
         st.header("Análise Exploratória dos Dados")
+
+        # 1. Visão Geral
         st.subheader("1. Visão Geral do Dataset")
         st.dataframe(df.head())
+
+        # 2. Estatísticas
         st.subheader("2. Estatísticas Descritivas")
         st.dataframe(df.describe())
-        st.subheader("3. Distribuição das Variáveis")
+
+        # 3. Distribuição
+        st.subheader("3. Distribuição das Variáveis Numéricas")
         numeric_columns = df.select_dtypes(include=['number']).columns.tolist()
-        if not numeric_columns:
-            st.warning("Não há colunas numéricas para plotar a distribuição.")
-        else:
-            selected_col = st.selectbox("Selecione uma variável para ver sua distribuição:", options=numeric_columns)
+        if numeric_columns:
+            selected_col = st.selectbox("Selecione uma variável:", options=numeric_columns)
             if selected_col:
                 fig, ax = plt.subplots(figsize=(12, 5))
                 sns.histplot(df[selected_col], kde=True, ax=ax)
                 ax.set_title(f'Distribuição de {selected_col}')
                 st.pyplot(fig)
-
-        st.subheader("4. Matriz de Correlação entre Variáveis")
-        if not numeric_columns:
-            st.warning("Não há colunas numéricas para calcular a correlação.")
         else:
-            corr_matrix = df[numeric_columns].corr()
-            fig, ax = plt.subplots(figsize=(10, 8))
+            st.warning("Não há colunas numéricas para plotar.")
 
-            # MUDANÇA APLICADA AQUI para melhorar a legibilidade
-            sns.heatmap(
-                corr_matrix,
-                annot=True,
-                fmt=".2f",
-                cmap="coolwarm",
-                ax=ax,
-                annot_kws={"size": 6}  # Controla o tamanho da fonte dos números
-            )
+        # 4. Correlação
+        st.subheader("4. Matriz de Correlação")
+        if numeric_columns:
+            corr_matrix = df[numeric_columns].corr()
+            fig, ax = plt.subplots(figsize=(12, 5))
+            sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", ax=ax, annot_kws={"size": 6})
             ax.set_title("Mapa de Calor da Correlação")
             st.pyplot(fig)
+        else:
+            st.warning("Não há colunas numéricas para calcular correlação.")
 
-    # =====================================================================================
-    # --- ABA 2: SIMULADOR DE MODELOS ---
-    # =====================================================================================
+        # 5. Variáveis Categóricas
+        st.subheader("5. Análise de Variáveis Categóricas")
+        categorical_columns = df.select_dtypes(include=['object', 'category']).columns.tolist()
+        if categorical_columns:
+            cat_col = st.selectbox("Selecione uma variável categórica para análise:", options=categorical_columns,
+                                   key='cat_eda')
+            if cat_col:
+                st.write("Contagem de valores:")
+                st.dataframe(df[cat_col].value_counts())
+                fig, ax = plt.subplots(figsize=(12, 5))
+                sns.countplot(x=df[cat_col], ax=ax, order=df[cat_col].value_counts().index)
+                ax.set_title(f'Contagem de {cat_col}')
+                plt.xticks(rotation=45)
+                st.pyplot(fig)
+        else:
+            st.info("O dataset não possui variáveis categóricas para análise.")
+
+        # 6. Scatter Plot
+        st.subheader("6. Relação entre Duas Variáveis (Scatter Plot)")
+        if len(numeric_columns) >= 2:
+            col1 = st.selectbox("Selecione a variável para o eixo X:", options=numeric_columns, index=0)
+            col2 = st.selectbox("Selecione a variável para o eixo Y:", options=numeric_columns, index=1)
+            fig, ax = plt.subplots(figsize=(12, 5))
+            sns.scatterplot(data=df, x=col1, y=col2, ax=ax)
+            ax.set_title(f'Relação entre {col1} e {col2}')
+            st.pyplot(fig)
+        else:
+            st.info("São necessárias pelo menos duas colunas numéricas para criar um gráfico de dispersão.")
+
+        # 7. Box Plot
+        st.subheader("7. Análise de Outliers (Box Plot)")
+        if numeric_columns:
+            outlier_col = st.selectbox("Selecione uma variável para análise de outliers:", options=numeric_columns,
+                                       key='outlier_eda')
+            if outlier_col:
+                fig, ax = plt.subplots(figsize=(12, 5))
+                sns.boxplot(x=df[outlier_col], ax=ax)
+                ax.set_title(f'Box Plot de {outlier_col}')
+                st.pyplot(fig)
+        else:
+            st.info("Não há colunas numéricas para a análise de outliers.")
+
     with model_tab:
         st.header("Simulador de Modelos de Machine Learning")
         with st.sidebar:
             st.header("2. Configuração do Modelo")
-            model_type = st.selectbox("Selecione o Modelo",
-                                      ("Regressão Logística", "Árvore de Decisão", "Random Forest"))
+            model_type = st.selectbox("Selecione o Modelo", ("Regressão Logística", "Árvore de Decisão", "Random Forest"))
             if model_type == "Regressão Logística":
-                st.subheader("Hiperparâmetros")
                 params['C'] = st.slider("Regularização (C)", 0.01, 10.0, 1.0)
                 params['max_iter'] = st.slider("Iterações", 100, 5000, 1000)
             elif model_type == "Árvore de Decisão":
-                st.subheader("Hiperparâmetros")
                 params['max_depth'] = st.slider("Profundidade Máxima", 2, 30, 10)
                 params['criterion'] = st.selectbox("Critério", ("gini", "entropy"))
             elif model_type == "Random Forest":
-                st.subheader("Hiperparâmetros")
                 params['n_estimators'] = st.slider("Nº de Árvores", 10, 500, 100)
                 params['max_depth'] = st.slider("Profundidade Máxima", 2, 30, 10, key="rf_depth")
                 params['criterion'] = st.selectbox("Critério", ("gini", "entropy"), key="rf_criterion")
 
         colunas = df.columns.tolist()
-        target_variable = st.selectbox("Selecione a sua variável-alvo:", options=colunas, key="target_model")
+        target_variable = st.selectbox("Selecione a variável-alvo:", options=colunas, key="target_model")
         features_disponiveis = [col for col in colunas if col != target_variable]
-        feature_variables = st.multiselect("Selecione as suas features:", options=features_disponiveis,
-                                           default=features_disponiveis)
+        feature_variables = st.multiselect("Selecione as features:", options=features_disponiveis, default=features_disponiveis)
         st.write("---")
 
         if st.button("Treinar Modelo"):
@@ -127,7 +141,8 @@ if uploaded_file is not None:
                     if len(unique_vals) == 2:
                         y = y.map({unique_vals[0]: 0, unique_vals[1]: 1})
                     else:
-                        st.error("Variável-alvo precisa ter 2 classes para a Curva ROC."); st.stop()
+                        st.error("Variável-alvo precisa ter 2 classes para a Curva ROC.")
+                        st.stop()
                 X = pd.get_dummies(X, drop_first=True)
                 scaler = StandardScaler()
                 X_scaled = scaler.fit_transform(X)
@@ -150,12 +165,12 @@ if uploaded_file is not None:
                 st.subheader("Resultados da Avaliação do Modelo")
 
                 res_tab1, res_tab2, res_tab3, res_tab4 = st.tabs(
-                    ["Métricas", "Matriz de Confusão", "Comparativo & Curva ROC", "Probabilidades"])
+                    ["Métricas", "Matriz de Confusão", "Comparativo & Curva ROC", "Probabilidades"]
+                )
 
                 with res_tab1:
                     st.metric(label="Acurácia", value=f"{accuracy:.2%}")
-                    st.dataframe(pd.DataFrame(
-                        classification_report(y_test, y_pred, output_dict=True, zero_division=0)).transpose())
+                    st.dataframe(pd.DataFrame(classification_report(y_test, y_pred, output_dict=True, zero_division=0)).transpose())
 
                 with res_tab2:
                     st.subheader("Matriz de Confusão")
@@ -167,7 +182,7 @@ if uploaded_file is not None:
                     buf = io.BytesIO()
                     fig.savefig(buf, format='png', bbox_inches='tight')
                     buf.seek(0)
-                    st.image(buf, width=550)  # aqui controla a largura da imagem em px
+                    st.image(buf, width=550)
 
                 with res_tab3:
                     st.subheader("Curva ROC")
@@ -182,22 +197,63 @@ if uploaded_file is not None:
                     buf = io.BytesIO()
                     fig.savefig(buf, format='png', bbox_inches='tight')
                     buf.seek(0)
-                    st.image(buf, width=500)  # controle da largura em px
+                    st.image(buf, width=500)
 
                     st.subheader("Comparativo de Modelos (Acurácia)")
-                    resultados = {};
-                    for nome, modelo in {"Regressão Logística": LogisticRegression(max_iter=1000),
-                                         "Árvore de Decisão": DecisionTreeClassifier(),
-                                         "Random Forest": RandomForestClassifier()}.items():
-                        modelo.fit(X_train, y_train);
-                        pred = modelo.predict(X_test);
+                    resultados = {}
+                    for nome, modelo in {
+                        "Regressão Logística": LogisticRegression(max_iter=1000),
+                        "Árvore de Decisão": DecisionTreeClassifier(),
+                        "Random Forest": RandomForestClassifier()
+                    }.items():
+                        modelo.fit(X_train, y_train)
+                        pred = modelo.predict(X_test)
                         resultados[nome] = accuracy_score(y_test, pred)
+
+                    st.markdown(
+                        """
+                        <style>
+                        .df-container {max-width: 400px; margin-left: auto; margin-right: auto;}
+                        </style>
+                        """, unsafe_allow_html=True
+                    )
+                    st.markdown('<div class="df-container">', unsafe_allow_html=True)
                     st.dataframe(pd.DataFrame.from_dict(resultados, orient='index', columns=['Acurácia']))
+                    st.markdown('</div>', unsafe_allow_html=True)
 
                 with res_tab4:
                     st.subheader("Probabilidade por Amostra")
-                    st.dataframe(
-                        pd.DataFrame({"Real": y_test.values, "Previsto": y_pred, "Prob. Classe 1": y_prob}).sort_values(
-                            "Prob. Classe 1", ascending=False))
+                    st.dataframe(pd.DataFrame({
+                        "Real": y_test.values,
+                        "Previsto": y_pred,
+                        "Prob. Classe 1": y_prob
+                    }).sort_values("Prob. Classe 1", ascending=False))
 else:
-    st.warning("Por favor, carregar um arquivo CSV para começar.")
+    st.markdown("---")
+    st.header("Bem-vindo ao Insight Navigator! 🚀")
+
+    st.markdown("""
+        Esta é a sua central de controle para projetos de Ciência de Dados. A ferramenta foi projetada para guiá-lo através do ciclo completo: da exploração inicial de um dataset até a avaliação detalhada de modelos preditivos.
+        """)
+
+    st.info("👈 **Para começar, carregue um arquivo CSV usando o menu na barra lateral esquerda.**")
+
+    st.subheader("Como Utilizar a Ferramenta:")
+    st.markdown("""
+        1.  **Carregue seus Dados:** No menu lateral, clique em 'Browse files' e selecione um arquivo CSV do seu computador.
+        2.  **Explore (Aba EDA):** Após o upload, a primeira aba lhe dará uma análise completa do seu dataset. Navegue pelas estatísticas, distribuições e correlações para entender seus dados a fundo.
+        3.  **Modele (Aba Simulador):**
+            * Na segunda aba, selecione sua **variável-alvo** e as **features**.
+            * Na barra lateral, escolha um modelo de Machine Learning e ajuste seus **hiperparâmetros**.
+            * Clique em **'Treinar Modelo'** e explore os resultados nas diversas abas de avaliação.
+        """)
+
+    st.subheader("Não tem um dataset? Sem problemas!")
+    st.markdown("""
+        Você pode baixar um dataset clássico de exemplo sobre diagnóstico de câncer de mama para testar todas as funcionalidades da ferramenta.
+
+        [**Clique aqui para baixar o dataset de exemplo (Breast Cancer).**](https://raw.githubusercontent.com/dataprofessor/data/master/breast-cancer-wisconsin-data.csv)
+        """)
+    st.markdown("---")
+    st.write("Desenvolvido com Streamlit, Pandas, Scikit-learn e ❤️.")
+
