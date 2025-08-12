@@ -1,6 +1,6 @@
 # 🚀 Insight Navigator: Análise e Modelagem Preditiva
 
-[![Streamlit App](https://insight-navigator.streamlit.app/)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://insight-navigator.streamlit.app/)
 
 Uma aplicação web completa para o ciclo de vida de projetos de Ciência de Dados, construída com Streamlit. O **Insight Navigator** permite que usuários carreguem seus próprios datasets, realizem uma Análise Exploratória de Dados (EDA) detalhada e, em seguida, treinem, comparem e avaliem múltiplos modelos de Machine Learning de forma interativa.
 
